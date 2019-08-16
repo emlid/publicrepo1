@@ -251,6 +251,13 @@ auto devlib::native::requestUsbDeviceList(void)
                         CFSTR("idProduct"), nullptr,
                         kIORegistryIterateRecursively );
 
+        io_name_t location;
+        result = ::IORegistryEntryGetLocationInPlane(usbDeviceRef, kIOServicePlane, location);
+        if (result != KERN_SUCCESS) {
+            qCCritical(macxutil::macxlog()) << "can not extract usb port path";
+            return {};
+        }
+
         auto bsdName = macxutil::MYCFStringCopyUTF8String(bsdNameRef);
 
         int vid = 0;
@@ -259,8 +266,7 @@ auto devlib::native::requestUsbDeviceList(void)
         ::CFNumberGetValue(vidRef, kCFNumberSInt32Type, &vid);
         ::CFNumberGetValue(pidRef, kCFNumberSInt32Type, &pid);
 
-        //usbPortPath is not yet supported. Therefore LocationPortPath is None
-        devlist.push_back(std::make_tuple(vid, pid, QString("/dev/%1").arg(bsdName), QString("None")));
+        devlist.push_back(std::make_tuple(vid, pid, QString("/dev/%1").arg(bsdName), QString(location)));
     }
 
     return devlist;
