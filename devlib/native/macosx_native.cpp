@@ -251,6 +251,20 @@ auto devlib::native::requestUsbDeviceList(void)
                         CFSTR("idProduct"), nullptr,
                         kIORegistryIterateRecursively );
 
+        io_name_t rawLocation;
+        result = ::IORegistryEntryGetLocationInPlane(usbDeviceRef, kIOServicePlane, rawLocation);
+        if (result != KERN_SUCCESS) {
+            qCCritical(macxutil::macxlog()) << "can not extract usb port path";
+            return {};
+        }
+        auto busNumber = QString{rawLocation}.left(2).toInt(nullptr, 16);
+        auto usbPorts = QString{rawLocation}
+                        .remove(0,2) // remove bus
+                        .remove("0") // remove extra zeros
+                        .split("", QString::SkipEmptyParts) // split to usb ports
+                        .join("-"); // join ports with '-' separator
+        auto location = QString::number(busNumber) + "." + usbPorts;
+
         auto bsdName = macxutil::MYCFStringCopyUTF8String(bsdNameRef);
 
         int vid = 0;
@@ -259,8 +273,7 @@ auto devlib::native::requestUsbDeviceList(void)
         ::CFNumberGetValue(vidRef, kCFNumberSInt32Type, &vid);
         ::CFNumberGetValue(pidRef, kCFNumberSInt32Type, &pid);
 
-        //usbPortPath is not yet supported. Therefore LocationPortPath is None
-        devlist.push_back(std::make_tuple(vid, pid, QString("/dev/%1").arg(bsdName), QString("None")));
+        devlist.push_back(std::make_tuple(vid, pid, QString("/dev/%1").arg(bsdName), location));
     }
 
     return devlist;
