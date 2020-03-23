@@ -262,8 +262,8 @@ auto devlib::native::requestUsbDeviceList(void)
                         .remove(0,2) // remove bus
                         .remove("0") // remove extra zeros
                         .split("", QString::SkipEmptyParts) // split to usb ports
-                        .join("-"); // join ports with '-' separator
-        auto location = QString::number(busNumber) + "." + usbPorts;
+                        .join("."); // join ports with '-' separator
+        auto location = QString::number(busNumber) + "-" + usbPorts;
 
         auto bsdName = macxutil::MYCFStringCopyUTF8String(bsdNameRef);
 
