@@ -52,6 +52,20 @@ namespace macos_utils {
 
     auto extractUsbPortsFromLocationId(const QString & locationID) -> QStringList;
 
+
+    enum class UnmountResult
+    {
+        Undefined,
+        Success,
+        InvalidDriveError,
+        AccessDeniedError,
+        RunloopStallError,
+        GeneralError
+    };
+
+
+    auto unmountDiskWithRunLoop(const char * device) -> UnmountResult;
+
 }
 
 
